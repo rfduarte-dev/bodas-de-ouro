@@ -201,11 +201,24 @@ async function startCamera(facing) {
   }
   try {
     stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: facing, width: { ideal: 1080 }, height: { ideal: 1920 } },
+      video: {
+        facingMode: facing,
+        width: { ideal: 1920 },
+        height: { ideal: 1920 }
+      },
       audio: false
     });
     video.srcObject = stream;
     permissionMsg.style.display = 'none';
+
+    // Reseta zoom digital/óptico para 1x quando o dispositivo permite
+    const track = stream.getVideoTracks()[0];
+    const capabilities = track.getCapabilities ? track.getCapabilities() : {};
+    if (capabilities.zoom) {
+      try {
+        await track.applyConstraints({ advanced: [{ zoom: capabilities.zoom.min }] });
+      } catch (e) { /* alguns navegadores não suportam ajustar, ignora */ }
+    }
   } catch (err) {
     permissionMsg.innerHTML = 'Não foi possível acessar a câmera.<br><br>Verifique as permissões do navegador e tente novamente.<br><br><button class="pillBtn primary" id="retryBtn" style="max-width:220px;margin-top:10px;">Tentar novamente</button>';
     permissionMsg.style.display = 'flex';
