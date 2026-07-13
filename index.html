@@ -93,6 +93,10 @@
     position:relative;
     width:84px; height:84px;
     display:flex; align-items:center; justify-content:center;
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
   }
   #ringSvg {
     position:absolute;
@@ -119,6 +123,10 @@
     border: 4px solid var(--gold);
     position:relative;
     transition: transform 0.15s ease;
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
   }
   #shutterBtn::after{
     content:'';
@@ -483,6 +491,8 @@ function animateRing() {
   const elapsed = performance.now() - recordStartTime;
   const pct = Math.min(elapsed / MAX_DURATION_MS, 1);
   ringProgress.style.strokeDashoffset = 226 - (226 * pct);
+  const secondsLeft = Math.max(0, Math.ceil((MAX_DURATION_MS - elapsed) / 1000));
+  statusEl.textContent = `Gravando... ${secondsLeft}s`;
   if (pct >= 1) return;
   requestAnimationFrame(animateRing);
 }
@@ -490,6 +500,7 @@ function animateRing() {
 // ---------- Gestos: toque = foto, segurar = vídeo ----------
 function onPressStart(e) {
   e.preventDefault();
+  if (holdTimer || isRecording) return; // evita disparo duplicado
   holdTimer = setTimeout(() => {
     holdTimer = null;
     startRecording();
@@ -510,6 +521,7 @@ shutterBtn.addEventListener('pointerdown', onPressStart);
 shutterBtn.addEventListener('pointerup', onPressEnd);
 shutterBtn.addEventListener('pointerleave', onPressEnd);
 shutterBtn.addEventListener('pointercancel', onPressEnd);
+shutterBtn.addEventListener('contextmenu', (e) => e.preventDefault());
 
 // ---------- Retake / Download / Share ----------
 retakeBtn.onclick = () => {
